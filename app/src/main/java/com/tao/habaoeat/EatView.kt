@@ -21,8 +21,8 @@ class EatView : View {
      */
     lateinit var position: Point
     lateinit var paint: Paint
-    var windowX = 0
-    var windowY = 0
+    var windowX = 0f
+    var windowY = 0f
     //宽度
     val eatWid = 20
 
@@ -53,10 +53,10 @@ class EatView : View {
     fun init(context: Context) {
         val dm = DisplayMetrics()
         (context as Activity).windowManager.defaultDisplay.getMetrics(dm)
-        windowX = dm.widthPixels
-        windowY = dm.heightPixels
+        windowX = dm.widthPixels.toFloat()
+        windowY = dm.heightPixels.toFloat()
         //起始位置在中心点
-        position = Point(windowX / 2, windowY / 2)
+        position = Point((windowX / 2).toInt(), (windowY / 2).toInt())
         paint = Paint()
         paint.isAntiAlias = true
         paint.color = Color.BLACK
@@ -79,16 +79,17 @@ class EatView : View {
     /**
      * x法判断上下左右方向
      */
-    fun xDir(event: MotionEvent): Int {
-        if (event.y / event.x < windowY / windowX) {
+    fun xDir(x:Float,y:Float): Int {
+        if ((y / x) < (windowY / windowX)) {
             //左上到右下线的右侧
-            if ((windowY - event.y) / event.x < windowY / windowX) {
+            if (((windowY - y) / x) <( windowY / windowX)) {
                 return 3
             } else {
                 return 1
             }
+
         } else {
-            if ((windowY - event.y) / event.x < windowY / windowX) {
+            if (((windowY - y) / x )<( windowY / windowX)) {
                 return 0
             } else {
                 return 2
@@ -101,9 +102,10 @@ class EatView : View {
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 //检测到按下操作，确定当前方向，怎样判断呢，以X方式来判断
-                if (nowDir != xDir(event)) {
+                if (nowDir != xDir(event.x,event.y)) {
                     //准备转弯
-                    nextDir = xDir(event)
+                    nextDir = xDir(event.x,event.y)
+                    bodyLists.add(Point(bodyLists[bodyLists.size-1].x,bodyLists[bodyLists.size-1].y-20))
                 }
                 invalidate()
             }
@@ -117,19 +119,22 @@ class EatView : View {
         if (bodyLists[1].x - bodyLists[0].x == 20) {
             bodyLists[0].y += nowSpeed
         }
-        when (nextDir) {
-            0 -> {
-            }
-            1 -> {
+        if (nextDir != nowDir) {
+            when (nextDir) {
+                0 -> {
+                }
+                1 -> {
 
-            }
-            2 -> {
+                }
+                2 -> {
 
-            }
-            3 -> {
-                bodyLists[bodyLists.size-1].x += nowSpeed
+                }
+                3 -> {
+                    bodyLists[bodyLists.size - 1].x += nowSpeed
+                }
             }
         }
+
         for (n in 0..bodyLists.size - 2) {
             canvas.drawRect(bodyLists[n].x.toFloat(), bodyLists[n].y.toFloat(), bodyLists[n + 1].x.toFloat(), bodyLists[n + 1].y.toFloat(), paint)
         }
@@ -149,7 +154,7 @@ class EatView : View {
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-        setMeasuredDimension(windowX, windowY);
+        setMeasuredDimension(windowX.toInt(), windowY.toInt());
 
     }
 
